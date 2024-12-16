@@ -15,7 +15,8 @@ interface PageProps {
     // searchParams: { [key: string]: string | string[] | undefined }, // queryParams
 }
 
-export function generateMetadata({ params: { topic } }: PageProps): Metadata {
+export async function generateMetadata(props: PageProps): Promise<Metadata> {
+    const { topic } = await props.params;
     return {
         title: topic + " - Image Gallery",
     }
@@ -28,8 +29,13 @@ export function generateStaticParams() {
     });
 }
 
-export default async function Page({ params: { topic } }: PageProps) {
-    const response = await fetch(`https://api.unsplash.com/photos/random?query=${topic}&count=5&client_id=${process.env.UNSPLASH_ACCESS_KEY}`);
+export default async function Page(props: PageProps) {
+    const { topic } = await props.params;
+    const response = await fetch(`https://api.unsplash.com/photos/random?query=${topic}&count=5&client_id=${process.env.UNSPLASH_ACCESS_KEY}`,
+        {
+            next: { revalidate: 60 }
+        }
+    );
     const images: UnsplashImage[] = await response.json();
 
     return (
@@ -48,7 +54,7 @@ export default async function Page({ params: { topic } }: PageProps) {
                             src={image.urls.raw}
                             width={250}
                             height={250}
-                            alt={image.description}
+                            alt={image.description || "image"}
                             key={image.urls.raw}
                             className={styles.image}
                         />
