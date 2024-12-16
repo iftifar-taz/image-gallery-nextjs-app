@@ -4,8 +4,10 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 import { Alert } from "@/components/bootstrap";
 
+type paramsType = Promise<{ username: string }>;
+
 interface PageProps {
-    params: { username: string },
+    params: paramsType,
 }
 
 async function getUser(username: string): Promise<UnsplashUser> {
@@ -18,7 +20,8 @@ async function getUser(username: string): Promise<UnsplashUser> {
 
 const getUserCached = cache(getUser) // Use cache if you're not using the native fetch
 
-export async function generateMetadata({ params: { username } }: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+    const { username } = await params;
     const user = await getUserCached(username);
 
     return {
@@ -26,7 +29,8 @@ export async function generateMetadata({ params: { username } }: PageProps): Pro
     }
 }
 
-export default async function Page({ params: { username } }: PageProps) {
+export default async function Page({ params }: PageProps) {
+    const { username } = await params;
     const user = await getUserCached(username);
 
     return (

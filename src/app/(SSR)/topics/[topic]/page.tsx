@@ -10,13 +10,15 @@ import Link from "next/link";
 // only work with server side preloaded pages
 // export const dynamicParams = false;
 
+type paramsType = Promise<{ topic: string }>;
+
 interface PageProps {
-    params: { topic: string },
+    params: paramsType,
     // searchParams: { [key: string]: string | string[] | undefined }, // queryParams
 }
 
-export async function generateMetadata(props: PageProps): Promise<Metadata> {
-    const { topic } = await props.params;
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+    const { topic } = await params;
     return {
         title: topic + " - Image Gallery",
     }
@@ -29,8 +31,9 @@ export function generateStaticParams() {
     });
 }
 
-export default async function Page(props: PageProps) {
-    const { topic } = await props.params;
+export default async function Page({ params }: PageProps) {
+    const { topic } = await params;
+
     const response = await fetch(`https://api.unsplash.com/photos/random?query=${topic}&count=5&client_id=${process.env.UNSPLASH_ACCESS_KEY}`,
         {
             next: { revalidate: 60 }
